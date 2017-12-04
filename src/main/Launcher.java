@@ -16,9 +16,5 @@ public class Launcher {
         }
         MainWindow window = new MainWindow("3D Visualization - Data Generation");
         window.show();
-
-        Coordinate coordinate = new Coordinate("45.430636, -75.677917");
-        System.out.println(coordinate.getLatitude());
-        System.out.println(coordinate.getLongitude());
     }
 }

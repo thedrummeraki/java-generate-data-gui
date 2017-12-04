@@ -17,6 +17,9 @@ public class MainWindow implements GenerateDataWorkerListener {
     private JTextField a4542123875708452TextField;
     private JTextField a4540726475697280TextField;
     private JTextField a4541559275676246TextField;
+    private JLabel generationState;
+
+    private int pointsToGenerate;
 
     private JFrame frame;
     private boolean shown;
@@ -34,6 +37,8 @@ public class MainWindow implements GenerateDataWorkerListener {
 
         shown = false;
         GenerateDataWorker.registerListener(this);
+
+        pointsToGenerate = 100;
     }
 
     public void show() {
@@ -48,12 +53,8 @@ public class MainWindow implements GenerateDataWorkerListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Generating data...");
-                GenerateDataWorker.getInstance().generate(
-                        toCoordinate(a4540726475697280TextField),
-                        toCoordinate(a4543063675677917TextField),
-                        toCoordinate(a4542123875708452TextField),
-                        toCoordinate(a4541559275676246TextField)
-                );
+                generationState.setText("Generating data...");
+                runGeneration();
             }
         });
 
@@ -64,6 +65,7 @@ public class MainWindow implements GenerateDataWorkerListener {
     public void onGenerationComplete(GenerationReport report) {
         System.out.print(report.wasAnyGenerated() ? "Compelete." : "Not compelete.");
         System.out.println(" Points generated: " + report.getPointsGenerated());
+        generationState.setText("Points generated: " + report.getPointsGenerated());
     }
 
     public void onGenerationError(GenerationReport report) {
@@ -76,5 +78,15 @@ public class MainWindow implements GenerateDataWorkerListener {
 
     private Coordinate toCoordinate(JTextField textField) {
         return new Coordinate(textField.getText());
+    }
+
+    private void runGeneration() {
+        GenerateDataWorker.getInstance().generate(
+                toCoordinate(a4540726475697280TextField),
+                toCoordinate(a4543063675677917TextField),
+                toCoordinate(a4542123875708452TextField),
+                toCoordinate(a4541559275676246TextField),
+                pointsToGenerate
+        );
     }
 }

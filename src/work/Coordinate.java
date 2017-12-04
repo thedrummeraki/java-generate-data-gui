@@ -12,6 +12,12 @@ public class Coordinate {
         this(coordinate, ",");
     }
 
+    public Coordinate(double latitude, double longitude) {
+        valid = true;
+        this.longitude = longitude;
+        this.latitude = latitude;
+    }
+
     public Coordinate(String coordinate, String separatorRegex) {
         valid = false;
         if (coordinate != null) {
@@ -52,5 +58,10 @@ public class Coordinate {
 
     public double getLongitude() {
         return longitude;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + latitude + ", " + longitude + "]";
     }
 }

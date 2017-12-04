@@ -16,22 +16,23 @@ public class GenerateDataWorker {
         listeners = new ArrayList<>();
     }
 
-    public void generate(Coordinate topLeft, Coordinate topRight, Coordinate botLeft, Coordinate botRight) {
+    public void generate(Coordinate topLeft, Coordinate topRight, Coordinate botLeft, Coordinate botRight, int count) {
         running = true;
         GenerationReport report = new GenerationReport();
         report.setError(true);
 
         Path2D path2D = this.build(topLeft, topRight, botLeft, botRight);
-        PathIterator iterator = path2D.getPathIterator(null);
-        double[] coordinates = new double[4];
+        List<SpectrumSignalStrength> points = new ArrayList<>();
 
-        while (!iterator.isDone()) {
-            int type = iterator.currentSegment(coordinates);
-            if (type == PathIterator.WIND_NON_ZERO || type == PathIterator.WIND_EVEN_ODD) {
-                System.out.println("Current point: " + coordinates[0] + ", " + coordinates[1]);
+        while (points.size() < count) {
+            Point.Double pointDouble = this.generatePoint(path2D);
+            Coordinate coordinate = new Coordinate(pointDouble.x, pointDouble.y);
+            if (coordinate.isValid()) {
+                SpectrumSignalStrength e = SpectrumSignalStrength.generateSignalStrengthAt(coordinate, -85, -45);
+                points.add(e);
+                System.out.println("New point: " + e.getCoordinates() + " (" + e.getSignalStrength() + " dBm)");
                 report.markDataPointAsProcessed();
             }
-            iterator.next();
         }
 
         report.setError(false);
@@ -45,6 +46,16 @@ public class GenerateDataWorker {
         } else {
             System.err.println("No need to cancel a non-running task.");
         }
+    }
+
+    private Point.Double generatePoint(Path2D path2D) {
+        Rectangle bounds = path2D.getBounds();
+        double x, y;
+        do {
+            x = bounds.getX() + bounds.getWidth() * Math.random();
+            y = bounds.getY() + bounds.getHeight() * Math.random();
+        } while (!path2D.contains(x, y));
+        return new Point.Double(x, y);
     }
 
     private Path2D build(Coordinate... coordinates) {
