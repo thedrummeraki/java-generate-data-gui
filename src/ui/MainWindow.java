@@ -6,8 +6,11 @@ import work.GenerateDataWorkerListener;
 import work.GenerationReport;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 public class MainWindow implements GenerateDataWorkerListener {
     private JPanel mainPanel;
@@ -19,6 +22,7 @@ public class MainWindow implements GenerateDataWorkerListener {
     private JTextField a4541559275676246TextField;
     private JLabel generationState;
     private JButton cancelButton;
+    private JTextField a10000TextField;
 
     private int pointsToGenerate;
 
@@ -32,6 +36,7 @@ public class MainWindow implements GenerateDataWorkerListener {
 
     public MainWindow(String title) {
         frame = new JFrame(title);
+        mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         frame.setContentPane(mainPanel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
@@ -51,21 +56,21 @@ public class MainWindow implements GenerateDataWorkerListener {
             }
             frame.dispose();
         });
-        cancelButton.addActionListener(e -> {
-            if (dataWorker != null) {
-                dataWorker.cancel();
-            }
-        });
-        generateButton.addActionListener(e -> {
+        setCancelButtonAction(false);
+        generateButton.addActionListener(generateActionListener());
+
+        frame.setVisible(true);
+        shown = true;
+    }
+
+    private ActionListener generateActionListener() {
+        return e -> {
             System.out.println("Generating data...");
             generateButton.setEnabled(false);
             cancelButton.setEnabled(true);
             generateButton.setText("Please wait...");
             SwingUtilities.invokeLater(this::runGeneration);
-        });
-
-        frame.setVisible(true);
-        shown = true;
+        };
     }
 
     @Override
@@ -76,8 +81,8 @@ public class MainWindow implements GenerateDataWorkerListener {
     public void onGenerationComplete(GenerationReport report) {
         generateButton.setEnabled(true);
         cancelButton.setEnabled(false);
-        generateButton.setText("Again!");
         generationState.setText("Done. Points generated: " + report.getPointsGenerated());
+        transformGenerateButtonToSaveButton();
     }
 
     public void onGenerationError(GenerationReport report) {
@@ -107,5 +112,51 @@ public class MainWindow implements GenerateDataWorkerListener {
         );
         dataWorker.registerListener(this);
         dataWorker.execute();
+    }
+
+    private void transformGenerateButtonToSaveButton() {
+        generateButton.setText("Save as CSV...");
+
+        setActionListener(generateButton, e -> {
+            final JFileChooser fileChooser = new JFileChooser(System.getProperty("user.home") + "/Documents");
+            int returnValue = fileChooser.showSaveDialog(mainPanel);
+
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooser.getSelectedFile();
+                System.out.println("Saving file to " + file);
+            } else {
+                setCancelButtonAction(true);
+            }
+        });
+    }
+
+    private void setCancelButtonAction(boolean reset) {
+        cancelButton.setEnabled(reset);
+        if (reset) {
+            cancelButton.setText("Reset");
+            setActionListener(cancelButton, e -> {
+                generateButton.setText("Generate!");
+                setActionListener(generateButton, generateActionListener());
+                setCancelButtonAction(false);
+            });
+        } else {
+            cancelButton.setText("Cancel");
+            setActionListener(cancelButton, e -> {
+                if (dataWorker != null) {
+                    dataWorker.cancel();
+                }
+            });
+        }
+    }
+
+    private void setActionListener(JButton component, ActionListener listener) {
+        if (listener == null) return;
+
+        if (component != null) {
+            for (ActionListener l : component.getActionListeners()) {
+                component.removeActionListener(l);
+            }
+            component.addActionListener(listener);
+        }
     }
 }
