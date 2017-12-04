@@ -2,49 +2,120 @@ package work;
 
 import sun.plugin.dom.core.CoreConstants;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GenerateDataWorker {
+public class GenerateDataWorker extends SwingWorker<GenerationReport, Double> {
 
+    private int count;
+    private Coordinate topLeft, topRight, botLeft, botRight;
+    private List<GenerateDataWorkerListener> listeners;
     private boolean running;
 
-    private GenerateDataWorker() {
+    public GenerateDataWorker(Coordinate topLeft, Coordinate topRight, Coordinate botLeft, Coordinate botRight, int count) {
+        this.count = count;
         listeners = new ArrayList<>();
+        this.topLeft = topLeft;
+        this.topRight = topRight;
+        this.botLeft = botLeft;
+        this.botRight = botRight;
+        this.running = false;
     }
 
-    public void generate(Coordinate topLeft, Coordinate topRight, Coordinate botLeft, Coordinate botRight, int count) {
+    @Override
+    protected GenerationReport doInBackground() throws Exception {
         running = true;
         GenerationReport report = new GenerationReport();
-        report.setError(true);
+        generate(report);
+        return report;
+    }
 
+    @Override
+    protected void done() {
+        GenerationReport endReport = null;
+        try {
+            endReport = get();
+        } catch (Exception e) {
+            endReport = new GenerationReport();
+        } finally {
+            if (endReport != null)
+                issueEndSuccess(endReport);
+        }
+    }
+
+    @Override
+    protected void process(List<Double> chunks) {
+        if (!chunks.isEmpty()) {
+            updateProgress(chunks.get(chunks.size() - 1));
+        }
+    }
+
+    public void cancel() {
+        cancel(false);
+        running = false;
+    }
+
+    public void registerListener(GenerateDataWorkerListener listener) {
+        listeners.add(listener);
+    }
+
+    private void generate(GenerationReport report) {
         Path2D path2D = this.build(topLeft, topRight, botLeft, botRight);
         List<SpectrumSignalStrength> points = new ArrayList<>();
 
         while (points.size() < count) {
+            if (!running) {
+                return;
+            }
             Point.Double pointDouble = this.generatePoint(path2D);
             Coordinate coordinate = new Coordinate(pointDouble.x, pointDouble.y);
             if (coordinate.isValid()) {
                 SpectrumSignalStrength e = SpectrumSignalStrength.generateSignalStrengthAt(coordinate, -85, -45);
                 points.add(e);
-                System.out.println("New point: " + e.getCoordinates() + " (" + e.getSignalStrength() + " dBm)");
                 report.markDataPointAsProcessed();
+
+                try {
+                    // Thread.sleep(100);
+                } catch (Exception ex) {};
+                publish(((double)points.size() / (double)count) * 100);
             }
         }
 
-        report.setError(false);
-        issueEndSuccess(report);
-        running = false;
+        if (!running) {
+            report.setError(false);
+            issueCancel(report);
+        } else {
+            report.setStrengthList(points);
+            report.setError(false);
+            issueEndSuccess(report);
+        }
     }
 
-    public void cancel() {
-        if (running) {
-            running = false;
-        } else {
-            System.err.println("No need to cancel a non-running task.");
+    private void issueCancel(GenerationReport report) {
+        for (GenerateDataWorkerListener listener : listeners) {
+            listener.onGenerationInterrupt(report);
+        }
+    }
+
+    private synchronized void updateProgress(double progress) {
+        for (GenerateDataWorkerListener listener : listeners) {
+            listener.onGenerationProgress(progress);
+        }
+    }
+
+    private void issueEndSuccess(GenerationReport report) {
+        for (GenerateDataWorkerListener listener : listeners) {
+            listener.onGenerationComplete(report);
+        }
+    }
+
+    private void issueEndFailure(GenerationReport report) {
+        for (GenerateDataWorkerListener listener : listeners) {
+            listener.onGenerationError(report);
         }
     }
 
@@ -70,48 +141,6 @@ public class GenerateDataWorker {
         }
         path2D.closePath();
         return path2D;
-    }
-
-    private void issueCancel(GenerationReport report) {
-        for (GenerateDataWorkerListener listener : listeners) {
-            listener.onGenerationInterrupt(report);
-        }
-    }
-
-    private void issueEndSuccess(GenerationReport report) {
-        for (GenerateDataWorkerListener listener : listeners) {
-            listener.onGenerationComplete(report);
-        }
-    }
-
-    private void issueEndFailure(GenerationReport report) {
-        for (GenerateDataWorkerListener listener : listeners) {
-            listener.onGenerationError(report);
-        }
-    }
-
-    private void addListener(GenerateDataWorkerListener listener) {
-        listeners.add(listener);
-    }
-
-    private List<GenerateDataWorkerListener> listeners;
-
-    private static GenerateDataWorker worker;
-    private static final Object lock = new Object();
-
-    public static GenerateDataWorker getInstance() {
-        if (worker == null) {
-            synchronized (lock) {
-                if (worker == null) {
-                    worker = new GenerateDataWorker();
-                }
-            }
-        }
-        return worker;
-    }
-
-    public static void registerListener(GenerateDataWorkerListener listener) {
-        getInstance().addListener(listener);
     }
 
 }

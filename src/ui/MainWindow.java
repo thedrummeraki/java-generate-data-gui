@@ -18,11 +18,13 @@ public class MainWindow implements GenerateDataWorkerListener {
     private JTextField a4540726475697280TextField;
     private JTextField a4541559275676246TextField;
     private JLabel generationState;
+    private JButton cancelButton;
 
     private int pointsToGenerate;
 
     private JFrame frame;
     private boolean shown;
+    private GenerateDataWorker dataWorker;
 
     public MainWindow() {
         this(null);
@@ -36,7 +38,6 @@ public class MainWindow implements GenerateDataWorkerListener {
         frame.setLocationRelativeTo(null);
 
         shown = false;
-        GenerateDataWorker.registerListener(this);
 
         pointsToGenerate = 100;
     }
@@ -44,36 +45,53 @@ public class MainWindow implements GenerateDataWorkerListener {
     public void show() {
         if (shown) return;
 
-        exitButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Meguri meguru ginga no you ni, sukiyo.........!");
+        exitButton.addActionListener(e -> {
+            if (dataWorker != null) {
+                dataWorker.cancel();
+            }
+            frame.dispose();
+        });
+        cancelButton.addActionListener(e -> {
+            if (dataWorker != null) {
+                dataWorker.cancel();
             }
         });
-        generateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Generating data...");
-                generationState.setText("Generating data...");
-                runGeneration();
-            }
+        generateButton.addActionListener(e -> {
+            System.out.println("Generating data...");
+            generateButton.setEnabled(false);
+            cancelButton.setEnabled(true);
+            generateButton.setText("Please wait...");
+            SwingUtilities.invokeLater(this::runGeneration);
         });
 
         frame.setVisible(true);
         shown = true;
     }
 
+    @Override
+    public synchronized void onGenerationProgress(double progress) {
+        generationState.setText("Generation data... (" + (int)progress + "% complete)");
+    }
+
     public void onGenerationComplete(GenerationReport report) {
-        System.out.print(report.wasAnyGenerated() ? "Compelete." : "Not compelete.");
-        System.out.println(" Points generated: " + report.getPointsGenerated());
-        generationState.setText("Points generated: " + report.getPointsGenerated());
+        generateButton.setEnabled(true);
+        cancelButton.setEnabled(false);
+        generateButton.setText("Again!");
+        generationState.setText("Done. Points generated: " + report.getPointsGenerated());
     }
 
     public void onGenerationError(GenerationReport report) {
+        generateButton.setEnabled(true);
+        cancelButton.setEnabled(false);
+        generateButton.setText("Try again");
 
     }
 
     public void onGenerationInterrupt(GenerationReport report) {
-
+        generateButton.setEnabled(true);
+        cancelButton.setEnabled(false);
+        generateButton.setText("Restart");
+        generationState.setText("Generation interrupted...");
     }
 
     private Coordinate toCoordinate(JTextField textField) {
@@ -81,12 +99,13 @@ public class MainWindow implements GenerateDataWorkerListener {
     }
 
     private void runGeneration() {
-        GenerateDataWorker.getInstance().generate(
-                toCoordinate(a4540726475697280TextField),
+        dataWorker = new GenerateDataWorker(toCoordinate(a4540726475697280TextField),
                 toCoordinate(a4543063675677917TextField),
                 toCoordinate(a4542123875708452TextField),
                 toCoordinate(a4541559275676246TextField),
                 pointsToGenerate
         );
+        dataWorker.registerListener(this);
+        dataWorker.execute();
     }
 }
