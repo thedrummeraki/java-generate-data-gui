@@ -34,7 +34,7 @@ Here are the direct instructions:
 ```
 $ git clone
 $ cd java-generate-data-gui/
-$ mvn clean install
+$ mvn clean install assembly:single
 $ java -jar target/java-datagen-$(currentversion)-jar-with-dependencies.jar
 ```
 
