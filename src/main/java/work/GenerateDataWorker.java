@@ -1,11 +1,8 @@
 package work;
 
-import sun.plugin.dom.core.CoreConstants;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Path2D;
-import java.awt.geom.PathIterator;
 import java.util.ArrayList;
 import java.util.List;
 

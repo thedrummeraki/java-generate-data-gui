@@ -1,9 +1,6 @@
 package main;
 
-import config.Config;
 import ui.MainWindow;
-import work.Coordinate;
-
 import javax.swing.*;
 
 public class Launcher {

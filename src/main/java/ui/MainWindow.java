@@ -48,11 +48,14 @@ public class MainWindow implements GenerateDataWorkerListener {
     public void show() {
         if (shown) return;
 
-        exitButton.addActionListener(e -> {
-            if (dataWorker != null) {
-                dataWorker.cancel();
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (dataWorker != null) {
+                    dataWorker.cancel();
+                }
+                frame.dispose();
             }
-            frame.dispose();
         });
         setCancelButtonAction(false);
         generateButton.addActionListener(generateActionListener());
@@ -62,12 +65,20 @@ public class MainWindow implements GenerateDataWorkerListener {
     }
 
     private ActionListener generateActionListener() {
-        return e -> {
-            System.out.println("Generating data...");
-            generateButton.setEnabled(false);
-            cancelButton.setEnabled(true);
-            generateButton.setText("Please wait...");
-            SwingUtilities.invokeLater(this::runGeneration);
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("Generating data...");
+                generateButton.setEnabled(false);
+                cancelButton.setEnabled(true);
+                generateButton.setText("Please wait...");
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        runGeneration();
+                    }
+                });
+            }
         };
     }
 
@@ -107,7 +118,7 @@ public class MainWindow implements GenerateDataWorkerListener {
                 toCoordinate(a4543063675677917TextField),
                 toCoordinate(a4542123875708452TextField),
                 toCoordinate(a4541559275676246TextField),
-                pointsToGenerate
+                Integer.parseInt(a10000TextField.getText())
         );
         dataWorker.registerListener(this);
         dataWorker.execute();
@@ -116,26 +127,32 @@ public class MainWindow implements GenerateDataWorkerListener {
     private void transformGenerateButtonToSaveButton() {
         generateButton.setText("Save as CSV...");
 
-        setActionListener(generateButton, e -> {
-            final JFileChooser fileChooser = new JFileChooser(System.getProperty("user.home") + "/Documents");
-            int returnValue = fileChooser.showSaveDialog(mainPanel);
+        setActionListener(generateButton, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final JFileChooser fileChooser = new JFileChooser(System.getProperty("user.home") + "/Documents");
+                int returnValue = fileChooser.showSaveDialog(mainPanel);
 
-            if (returnValue == JFileChooser.APPROVE_OPTION) {
-                if (successReport != null && !successReport.isError()) {
-                    File file = fileChooser.getSelectedFile();
-                    System.out.println("Saving file to " + file);
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                    if (successReport != null && !successReport.isError()) {
+                        File file = fileChooser.getSelectedFile();
+                        System.out.println("Saving file to " + file);
 
-                    SpectrumSignalStrength.getSignalStrengthAsCSV(successReport.getStrengthList(), file);
-                    JOptionPane.showInputDialog("Your file was saved at: " + file);
-                    cancelButton.setText("Cancel");
-                    setActionListener(cancelButton, e1 -> {
-                        if (dataWorker != null) {
-                            dataWorker.cancel();
-                        }
-                    });
+                        SpectrumSignalStrength.getSignalStrengthAsCSV(successReport.getStrengthList(), file);
+                        JOptionPane.showInputDialog("Your file was saved at: " + file);
+                        cancelButton.setText("Cancel");
+                        setActionListener(cancelButton, new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                if (dataWorker != null) {
+                                    dataWorker.cancel();
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    setCancelButtonAction(true);
                 }
-            } else {
-                setCancelButtonAction(true);
             }
         });
     }
@@ -144,16 +161,22 @@ public class MainWindow implements GenerateDataWorkerListener {
         cancelButton.setEnabled(reset);
         if (reset) {
             cancelButton.setText("Reset");
-            setActionListener(cancelButton, e -> {
-                generateButton.setText("Generate!");
-                setActionListener(generateButton, generateActionListener());
-                setCancelButtonAction(false);
+            setActionListener(cancelButton, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    generateButton.setText("Generate!");
+                    setActionListener(generateButton, generateActionListener());
+                    setCancelButtonAction(false);
+                }
             });
         } else {
             cancelButton.setText("Cancel");
-            setActionListener(cancelButton, e -> {
-                if (dataWorker != null) {
-                    dataWorker.cancel();
+            setActionListener(cancelButton, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (dataWorker != null) {
+                        dataWorker.cancel();
+                    }
                 }
             });
         }
