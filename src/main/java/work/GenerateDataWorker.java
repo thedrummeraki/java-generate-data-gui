@@ -1,5 +1,7 @@
 package work;
 
+import work.objects.*;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Path2D;
@@ -12,6 +14,9 @@ public class GenerateDataWorker extends SwingWorker<GenerationReport, Double> {
     private Coordinate topLeft, topRight, botLeft, botRight;
     private List<GenerateDataWorkerListener> listeners;
     private boolean running;
+
+    private TowerCarrier towerCarrier;
+    private ReadingTimeRange timeRange;
 
     public GenerateDataWorker(Coordinate topLeft, Coordinate topRight, Coordinate botLeft, Coordinate botRight, int count) {
         this.count = count;
@@ -56,29 +61,46 @@ public class GenerateDataWorker extends SwingWorker<GenerationReport, Double> {
         running = false;
     }
 
+    public void setTimeRange(ReadingTimeRange timeRange) {
+        this.timeRange = timeRange;
+    }
+
+    public void setTowerCarrier(TowerCarrier towerCarrier) {
+        this.towerCarrier = towerCarrier;
+    }
+
     public void registerListener(GenerateDataWorkerListener listener) {
         listeners.add(listener);
     }
 
     private void generate(GenerationReport report) {
         Path2D path2D = this.build(topLeft, topRight, botLeft, botRight);
-        List<SpectrumSignalStrength> points = new ArrayList<>();
+        List<DataReadingEntry> points = new ArrayList<>();
 
-        while (points.size() < count) {
+        int processedLocations = 0;
+        while (processedLocations < count) {
             if (!running) {
                 return;
             }
             Point.Double pointDouble = this.generatePoint(path2D);
             Coordinate coordinate = new Coordinate(pointDouble.x, pointDouble.y);
             if (coordinate.isValid()) {
-                SpectrumSignalStrength e = SpectrumSignalStrength.generateSignalStrengthAt(coordinate, -85, -45);
-                points.add(e);
-                report.markDataPointAsProcessed();
+                for (long timeStamp : timeRange.getTimeStamps()) {
+                    DataReadingEntry entry = new DataReadingEntry();
+                    entry.setCarrier(this.towerCarrier);
+                    entry.setCoordinates(coordinate);
+                    entry.setSignalStrength(SpectrumSignalStrength.generateSignalStrengthAt(coordinate, -85, -45));
+                    entry.setTimeStamp(timeStamp);
+
+                    points.add(entry);
+                    report.markDataPointAsProcessed();
+                }
 
                 try {
                     // Thread.sleep(100);
                 } catch (Exception ex) {};
-                publish(((double)points.size() / (double)count) * 100);
+                processedLocations++;
+                publish(((double)processedLocations / (double)count) * 100);
             }
         }
 
@@ -87,7 +109,7 @@ public class GenerateDataWorker extends SwingWorker<GenerationReport, Double> {
             issueCancel(report);
         } else {
             report.setComplete(true);
-            report.setStrengthList(points);
+            report.setDataReadingsList(points);
             report.setError(false);
             issueEndSuccess(report);
         }

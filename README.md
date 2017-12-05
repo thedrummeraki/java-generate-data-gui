@@ -1,10 +1,18 @@
 # Data readings generator
 
-Version: `1.0.0`
+Version: `1.1.0`
 
 ## About
 
 Ever felt the need to generate random signal strength reading between four coordinates? If so, then you are in luck.
+
+## What's new?
+
+- Possibility to select all or specific tower carriers;
+- Data readings are now renderer over time (over 1 day, 1 week, 1 month, a trimeter, a semester or 1 year)
+- File size shown when CSV saved;
+- Various UI (user interface) and UX (user experience) improvements;
+- Various miscellaneous improvements;
 
 ## How to use?
 
@@ -39,7 +47,3 @@ $ java -jar target/java-datagen-$(currentversion)-jar-with-dependencies.jar
 ```
 
 `$(currentversion)` can be found near the title of this readme.
-
-
-
-

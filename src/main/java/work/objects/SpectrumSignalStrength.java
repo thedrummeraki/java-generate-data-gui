@@ -1,4 +1,4 @@
-package work;
+package work.objects;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -10,8 +10,6 @@ public class SpectrumSignalStrength {
 
     private Coordinate coordinates;
     private double signalStrength;
-
-    private static final String[] CSV_HEADERS = {"LATITUDE", "LONGITUDE", "SIGNAL_STRENGTH"};
 
     private SpectrumSignalStrength(Coordinate coordinates) {
         this(coordinates, -113);
@@ -56,7 +54,7 @@ public class SpectrumSignalStrength {
         return signalStrength;
     }
 
-    public static void getSignalStrengthAsCSV(List<SpectrumSignalStrength> signalStrengths, File file) {
+    public static double getSignalStrengthAsCSV(List<DataReadingEntry> dataReadingEntries, File file) {
         if (file == null) {
             throw new IllegalArgumentException("Not null files please.");
         }
@@ -67,25 +65,28 @@ public class SpectrumSignalStrength {
                 throw new IllegalArgumentException(e);
             }
         }
+        double size = 0;
         try {
             PrintWriter pw = new PrintWriter(file);
             StringBuilder sb = new StringBuilder();
 
-            for (int i = 0; i < CSV_HEADERS.length; i++) {
-                String header = CSV_HEADERS[i];
+            for (int i = 0; i < DataReadingEntry.CSV_HEADERS.length; i++) {
+                String header = DataReadingEntry.CSV_HEADERS[i];
                 sb.append(header);
-                sb.append(i == CSV_HEADERS.length - 1 ? '\n' : ',');
+                sb.append(i == DataReadingEntry.CSV_HEADERS.length - 1 ? '\n' : ',');
             }
 
-            for (int i = 0; i < signalStrengths.size(); i++) {
-                SpectrumSignalStrength signalStrength = signalStrengths.get(i);
-                sb.append(signalStrength.toCSVEntry());
+            for (int i = 0; i < dataReadingEntries.size(); i++) {
+                DataReadingEntry dataReadingEntry = dataReadingEntries.get(i);
+                sb.append(dataReadingEntry.toCSVEntry());
             }
 
             pw.write(sb.toString());
             pw.close();
+            size = file.length();
         } catch (FileNotFoundException e) {
             throw new IllegalArgumentException("The file was not found.", e);
         }
+        return size;
     }
 }

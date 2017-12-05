@@ -1,25 +1,33 @@
 package ui;
 
+import utils.Utils;
 import work.*;
+import work.objects.Coordinate;
+import work.objects.ReadingTimeRange;
+import work.objects.SpectrumSignalStrength;
+import work.objects.TowerCarrier;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.event.*;
 import java.io.File;
 
 public class MainWindow implements GenerateDataWorkerListener {
     private JPanel mainPanel;
     private JButton exitButton;
     private JButton generateButton;
-    private JTextField a4543063675677917TextField;
-    private JTextField a4542123875708452TextField;
-    private JTextField a4540726475697280TextField;
-    private JTextField a4541559275676246TextField;
+    private JTextField coordinate1;
+    private JTextField coordinate2;
+    private JTextField coordinate3;
+    private JTextField coordinate4;
     private JLabel generationState;
     private JButton cancelButton;
     private JTextField a10000TextField;
+    private JSlider timeRangeSlider;
+    private JComboBox<TowerCarrier> carriersComboBox;
+    private JLabel timeRangeState;
 
     private int pointsToGenerate;
 
@@ -27,6 +35,9 @@ public class MainWindow implements GenerateDataWorkerListener {
     private boolean shown;
     private GenerateDataWorker dataWorker;
     private GenerationReport successReport;
+
+    private ReadingTimeRange currentTimeRange;
+    private TowerCarrier currentTowerCarrier;
 
     public MainWindow() {
         this(null);
@@ -39,10 +50,13 @@ public class MainWindow implements GenerateDataWorkerListener {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setLocationRelativeTo(null);
+        frame.setMinimumSize(frame.getSize());
+
+        timeRangeSlider.setMaximum(ReadingTimeRange.TIME_RANGES.length-1);
+        currentTimeRange = ReadingTimeRange.ONE_WEEK;
 
         shown = false;
-
-        pointsToGenerate = 100;
+        pointsToGenerate = 1000;
     }
 
     public void show() {
@@ -57,9 +71,31 @@ public class MainWindow implements GenerateDataWorkerListener {
                 frame.dispose();
             }
         });
+
+        for (TowerCarrier carrier : TowerCarrier.TOWER_CARRIERS) {
+            if (currentTowerCarrier == null) currentTowerCarrier = carrier;
+            carriersComboBox.addItem(carrier);
+        }
+        carriersComboBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                currentTowerCarrier = (TowerCarrier) e.getItem();
+            }
+        });
+
         setCancelButtonAction(false);
         generateButton.addActionListener(generateActionListener());
+        timeRangeSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int selected = timeRangeSlider.getValue();
+                currentTimeRange = ReadingTimeRange.TIME_RANGES[selected];
+                timeRangeState.setText("Time range (" + currentTimeRange.getName() + "*)");
+            }
+        });
+        timeRangeSlider.setValue(1);
 
+        a10000TextField.setText(Integer.toString(pointsToGenerate));
         frame.setVisible(true);
         shown = true;
     }
@@ -95,7 +131,7 @@ public class MainWindow implements GenerateDataWorkerListener {
         successReport = report;
         generateButton.setEnabled(true);
         cancelButton.setEnabled(false);
-        generationState.setText("Done. Points generated: " + report.getPointsGenerated());
+        generationState.setText("Done. Processed " + report.getPointsGenerated() + " point(s).");
         if (report.isComplete())
             transformGenerateButtonToSaveButton();
     }
@@ -119,19 +155,22 @@ public class MainWindow implements GenerateDataWorkerListener {
     }
 
     private void runGeneration() {
-        dataWorker = new GenerateDataWorker(toCoordinate(a4540726475697280TextField),
-                toCoordinate(a4543063675677917TextField),
-                toCoordinate(a4542123875708452TextField),
-                toCoordinate(a4541559275676246TextField),
+        dataWorker = new GenerateDataWorker(
+                toCoordinate(coordinate1),
+                toCoordinate(coordinate2),
+                toCoordinate(coordinate3),
+                toCoordinate(coordinate4),
                 Integer.parseInt(a10000TextField.getText())
         );
+        dataWorker.setTimeRange(currentTimeRange);
+        dataWorker.setTowerCarrier(currentTowerCarrier);
         dataWorker.registerListener(this);
         dataWorker.execute();
     }
 
     private void transformGenerateButtonToSaveButton() {
+        setCancelButtonAction(true);
         generateButton.setText("Save as CSV...");
-
         setActionListener(generateButton, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -143,17 +182,12 @@ public class MainWindow implements GenerateDataWorkerListener {
                         File file = fileChooser.getSelectedFile();
                         System.out.println("Saving file to " + file);
 
-                        SpectrumSignalStrength.getSignalStrengthAsCSV(successReport.getStrengthList(), file);
-                        JOptionPane.showMessageDialog(mainPanel, "Your file was saved at: " + file);
-                        cancelButton.setText("Cancel");
-                        setActionListener(cancelButton, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                if (dataWorker != null) {
-                                    dataWorker.cancel();
-                                }
-                            }
-                        });
+                        double fileSizeBytes = SpectrumSignalStrength.getSignalStrengthAsCSV(successReport.getDataReadingEntries(), file);
+                        String fileSize = Utils.getPrettyFileSize(fileSizeBytes);
+                        JOptionPane.showMessageDialog(mainPanel, "Your file was saved at: " + file + ".\nWrote: " + fileSize + ".");
+                        setCancelButtonAction(false);
+                        generateButton.setText("Generate!");
+                        setActionListener(generateButton, generateActionListener());
                     }
                 } else {
                     setCancelButtonAction(true);
@@ -169,9 +203,12 @@ public class MainWindow implements GenerateDataWorkerListener {
             setActionListener(cancelButton, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    generateButton.setText("Generate!");
-                    setActionListener(generateButton, generateActionListener());
-                    setCancelButtonAction(false);
+                    if (JOptionPane.showConfirmDialog(mainPanel,"All generated data will be lost. Continue?") == JOptionPane.OK_OPTION) {
+                        generateButton.setText("Generate!");
+                        generationState.setText("A data was lost. Press \"Generate!\" below to restart.");
+                        setActionListener(generateButton, generateActionListener());
+                        setCancelButtonAction(false);
+                    }
                 }
             });
         } else {

@@ -1,4 +1,4 @@
-package work;
+package work.objects;
 
 import java.awt.*;
 

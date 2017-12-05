@@ -1,5 +1,8 @@
 package work;
 
+import work.objects.DataReadingEntry;
+import work.objects.SpectrumSignalStrength;
+
 import java.util.List;
 
 public final class GenerationReport {
@@ -7,7 +10,7 @@ public final class GenerationReport {
     private int pointsGenerated;
     private boolean error;
     private boolean complete;
-    private List<SpectrumSignalStrength> strengthList;
+    private List<DataReadingEntry> dataReadingEntries;
 
     public GenerationReport() {
         setError(true);
@@ -41,11 +44,11 @@ public final class GenerationReport {
         pointsGenerated++;
     }
 
-    void setStrengthList(List<SpectrumSignalStrength> strengthList) {
-        this.strengthList = strengthList;
+    void setDataReadingsList(List<DataReadingEntry> dataReadingEntries) {
+        this.dataReadingEntries = dataReadingEntries;
     }
 
-    public List<SpectrumSignalStrength> getStrengthList() {
-        return strengthList;
+    public List<DataReadingEntry> getDataReadingEntries() {
+        return dataReadingEntries;
     }
 }
