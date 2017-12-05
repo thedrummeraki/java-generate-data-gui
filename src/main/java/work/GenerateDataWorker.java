@@ -86,6 +86,7 @@ public class GenerateDataWorker extends SwingWorker<GenerationReport, Double> {
             report.setError(false);
             issueCancel(report);
         } else {
+            report.setComplete(true);
             report.setStrengthList(points);
             report.setError(false);
             issueEndSuccess(report);

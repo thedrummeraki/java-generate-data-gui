@@ -88,11 +88,16 @@ public class MainWindow implements GenerateDataWorkerListener {
     }
 
     public void onGenerationComplete(GenerationReport report) {
+        if (report == null || !report.isComplete()) {
+            onGenerationInterrupt(report);
+            return;
+        }
         successReport = report;
         generateButton.setEnabled(true);
         cancelButton.setEnabled(false);
         generationState.setText("Done. Points generated: " + report.getPointsGenerated());
-        transformGenerateButtonToSaveButton();
+        if (report.isComplete())
+            transformGenerateButtonToSaveButton();
     }
 
     public void onGenerationError(GenerationReport report) {
@@ -139,7 +144,7 @@ public class MainWindow implements GenerateDataWorkerListener {
                         System.out.println("Saving file to " + file);
 
                         SpectrumSignalStrength.getSignalStrengthAsCSV(successReport.getStrengthList(), file);
-                        JOptionPane.showInputDialog("Your file was saved at: " + file);
+                        JOptionPane.showMessageDialog(mainPanel, "Your file was saved at: " + file);
                         cancelButton.setText("Cancel");
                         setActionListener(cancelButton, new ActionListener() {
                             @Override

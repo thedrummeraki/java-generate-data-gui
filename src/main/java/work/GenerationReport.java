@@ -6,6 +6,7 @@ public final class GenerationReport {
 
     private int pointsGenerated;
     private boolean error;
+    private boolean complete;
     private List<SpectrumSignalStrength> strengthList;
 
     public GenerationReport() {
@@ -24,8 +25,16 @@ public final class GenerationReport {
         return error;
     }
 
+    public boolean isComplete() {
+        return complete;
+    }
+
     void setError(boolean error) {
         this.error = error;
+    }
+
+    void setComplete(boolean complete) {
+        this.complete = complete;
     }
 
     void markDataPointAsProcessed() {
