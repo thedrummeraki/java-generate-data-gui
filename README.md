@@ -32,7 +32,7 @@ Here are the requirements for building this application:
 Here are the direct instructions:
 
 ```
-$ git clone
+$ git clone git@github.com:thedrummeraki/java-generate-data-gui.git
 $ cd java-generate-data-gui/
 $ mvn clean install assembly:single
 $ java -jar target/java-datagen-$(currentversion)-jar-with-dependencies.jar
