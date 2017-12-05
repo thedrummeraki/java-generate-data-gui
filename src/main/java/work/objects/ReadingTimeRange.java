@@ -30,7 +30,7 @@ public final class ReadingTimeRange {
 
     public long[] getTimeStamps() {
         long[] timeStamps = new long[timeStampsCount];
-        long start = new Date().getTime();
+        long start = 0;
         for (int i = 0; i < timeStampsCount; i++) {
             timeStamps[i] = start;
             start += timeVariation;
