@@ -80,7 +80,6 @@ public class SpectrumSignalStrength {
             for (int i = 0; i < signalStrengths.size(); i++) {
                 SpectrumSignalStrength signalStrength = signalStrengths.get(i);
                 sb.append(signalStrength.toCSVEntry());
-                sb.append(i == signalStrengths.size() - 1 ? '\n' : ',');
             }
 
             pw.write(sb.toString());
