@@ -31,6 +31,14 @@ Once complete, you will need to `Save as CSV...` in order to save your changes. 
 
 ![Picture 3](https://raw.githubusercontent.com/thedrummeraki/java-generate-data-gui/master/img/datagen-pic3.png)
 
+## How to open (IDE)?
+
+You can open this project with IntelliJ (actually, this is **_highly_** recommended). Because Java Swing is used, there is no guarantee that this will work under any other IDE. In the event that dependencies are missing, you are welcome to check them out in the `pom.xml` file located at the root this project.
+
+Once the project is cloned, you can open IntelliJ and select this project as a Maven Project. All dependencies will be found and you should be able to run the application.
+
+> Note: If you have proxy issues with Maven, simple clone the project and open it as a regular project on IntelliJ. Proxy issues may cause building the project with Maven which may lead to compile errors (that shouldn't be there) within IntelliJ.
+
 ## How to build?
 
 Here are the requirements for building this application:
