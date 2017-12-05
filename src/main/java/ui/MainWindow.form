@@ -2,12 +2,12 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="ui.MainWindow">
   <grid id="27dc6" binding="mainPanel" default-binding="true" layout-manager="BorderLayout" hgap="10" vgap="10">
     <constraints>
-      <xy x="20" y="20" width="852" height="350"/>
+      <xy x="20" y="20" width="852" height="370"/>
     </constraints>
     <properties/>
     <border type="empty"/>
     <children>
-      <grid id="63b11" layout-manager="GridLayoutManager" row-count="4" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="63b11" layout-manager="GridLayoutManager" row-count="5" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints border-constraint="North"/>
         <properties/>
@@ -23,14 +23,6 @@
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
             </constraints>
           </vspacer>
-          <component id="7511" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Please enter 4 latitude-longitude coordinates below."/>
-            </properties>
-          </component>
           <grid id="798e8" layout-manager="GridLayoutManager" row-count="1" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
@@ -54,11 +46,19 @@
                   </grid>
                 </constraints>
                 <properties>
-                  <text value="10000"/>
+                  <text value=""/>
                 </properties>
               </component>
             </children>
           </grid>
+          <component id="7511" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Please enter 4 latitude-longitude coordinates below."/>
+            </properties>
+          </component>
         </children>
       </grid>
       <grid id="a0ba8" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -97,7 +97,11 @@
                 </constraints>
                 <properties>
                   <enabled value="false"/>
+                  <hideActionText value="false"/>
+                  <horizontalTextPosition value="11"/>
                   <text value="Cancel"/>
+                  <verticalAlignment value="0"/>
+                  <verticalTextPosition value="0"/>
                 </properties>
               </component>
             </children>

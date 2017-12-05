@@ -1,5 +1,6 @@
 package ui;
 
+import ui.abstractuiclasses.JSetupListenerPanel;
 import utils.Utils;
 import work.*;
 import work.objects.Coordinate;
@@ -14,7 +15,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.event.*;
 import java.io.File;
 
-public class MainWindow implements GenerateDataWorkerListener {
+public class MainWindow implements GenerateDataWorkerListener, JSetupListenerPanel.OnJFrameActionsListener {
     private JPanel mainPanel;
     private JButton exitButton;
     private JButton generateButton;
@@ -39,14 +40,11 @@ public class MainWindow implements GenerateDataWorkerListener {
     private ReadingTimeRange currentTimeRange;
     private TowerCarrier currentTowerCarrier;
 
-    public MainWindow() {
-        this(null);
-    }
-
     public MainWindow(String title) {
         frame = new JFrame(title);
         mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        frame.setContentPane(mainPanel);
+        JPanel pane = new JPanel();
+        frame.setContentPane(new GenerateSignalStrengthDataPanel(this));
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setLocationRelativeTo(null);
@@ -59,6 +57,21 @@ public class MainWindow implements GenerateDataWorkerListener {
         pointsToGenerate = 1000;
     }
 
+    @Override
+    public void onExit() {
+        frame.dispose();
+    }
+
+    @Override
+    public void onCancel() {
+        onGenerationInterrupt(null);
+    }
+
+    @Override
+    public void onSubmit() {
+
+    }
+
     public void show() {
         if (shown) return;
 
@@ -68,7 +81,10 @@ public class MainWindow implements GenerateDataWorkerListener {
                 if (dataWorker != null) {
                     dataWorker.cancel();
                 }
-                frame.dispose();
+                frame.setContentPane(new JPanel());
+                frame.revalidate();
+                frame.repaint();
+                // frame.dispose();
             }
         });
 
@@ -120,7 +136,7 @@ public class MainWindow implements GenerateDataWorkerListener {
 
     @Override
     public synchronized void onGenerationProgress(double progress) {
-        generationState.setText("Generation data... (" + (int)progress + "% complete)");
+        generationState.setText("Generating data... (" + (int)progress + "% complete)");
     }
 
     public void onGenerationComplete(GenerationReport report) {
