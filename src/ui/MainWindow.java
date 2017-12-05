@@ -1,9 +1,6 @@
 package ui;
 
-import work.Coordinate;
-import work.GenerateDataWorker;
-import work.GenerateDataWorkerListener;
-import work.GenerationReport;
+import work.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -29,6 +26,7 @@ public class MainWindow implements GenerateDataWorkerListener {
     private JFrame frame;
     private boolean shown;
     private GenerateDataWorker dataWorker;
+    private GenerationReport successReport;
 
     public MainWindow() {
         this(null);
@@ -79,6 +77,7 @@ public class MainWindow implements GenerateDataWorkerListener {
     }
 
     public void onGenerationComplete(GenerationReport report) {
+        successReport = report;
         generateButton.setEnabled(true);
         cancelButton.setEnabled(false);
         generationState.setText("Done. Points generated: " + report.getPointsGenerated());
@@ -122,8 +121,19 @@ public class MainWindow implements GenerateDataWorkerListener {
             int returnValue = fileChooser.showSaveDialog(mainPanel);
 
             if (returnValue == JFileChooser.APPROVE_OPTION) {
-                File file = fileChooser.getSelectedFile();
-                System.out.println("Saving file to " + file);
+                if (successReport != null && !successReport.isError()) {
+                    File file = fileChooser.getSelectedFile();
+                    System.out.println("Saving file to " + file);
+
+                    SpectrumSignalStrength.getSignalStrengthAsCSV(successReport.getStrengthList(), file);
+                    JOptionPane.showInputDialog("Your file was saved at: " + file);
+                    cancelButton.setText("Cancel");
+                    setActionListener(cancelButton, e1 -> {
+                        if (dataWorker != null) {
+                            dataWorker.cancel();
+                        }
+                    });
+                }
             } else {
                 setCancelButtonAction(true);
             }

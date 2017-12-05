@@ -1,6 +1,5 @@
 package work;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class GenerationReport {
