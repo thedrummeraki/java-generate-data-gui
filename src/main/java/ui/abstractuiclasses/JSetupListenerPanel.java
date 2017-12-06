@@ -21,24 +21,13 @@ public abstract class JSetupListenerPanel extends JCustomPanel {
     }
 
     public JSetupListenerPanel() {
+        setupListeners();
     }
 
     /**
      * Sets up all listeners necessary for the panel. Called on constructor.
      * */
     protected abstract void setupListeners();
-
-    /**
-     * Checks if the input is valid.
-     * */
-    public abstract boolean hasValidInput();
-
-
-    protected final void checkValidInput() {
-        if (!hasValidInput()) {
-            throw new IllegalStateException("Illegal state: invalid input for " + getClass().getSimpleName());
-        }
-    }
 
     public interface OnJFrameActionsListener {
         void onExit();

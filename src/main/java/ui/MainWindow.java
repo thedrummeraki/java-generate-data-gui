@@ -12,6 +12,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 
@@ -43,8 +44,8 @@ public class MainWindow implements GenerateDataWorkerListener, JSetupListenerPan
     public MainWindow(String title) {
         frame = new JFrame(title);
         mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        JPanel pane = new JPanel();
-        frame.setContentPane(new GenerateSignalStrengthDataPanel(this));
+        frame.setContentPane(new MainLayoutPanel(this));
+        frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setLocationRelativeTo(null);

@@ -29,4 +29,16 @@ public abstract class JCustomPanel extends JPanel {
         button.addActionListener(listener);
     }
 
+    /**
+     * Checks if the input is valid.
+     * */
+    public abstract boolean hasValidInput();
+
+
+    protected final void checkValidInput() {
+        if (!hasValidInput()) {
+            throw new IllegalStateException("Illegal state: invalid input for " + getClass().getSimpleName());
+        }
+    }
+
 }

@@ -1,5 +1,6 @@
 package ui;
 
+import ui.abstractuiclasses.JCustomPanel;
 import ui.abstractuiclasses.JSetupListenerPanel;
 import work.objects.Coordinate;
 import work.objects.ReadingTimeRange;
@@ -13,17 +14,21 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GenerateSignalStrengthDataPanel extends JPanel {
+public class GenerateSignalStrengthDataPanel extends JCustomPanel {
 
     private JSetupListenerPanel.OnJFrameActionsListener listener;
 
     public GenerateSignalStrengthDataPanel(JSetupListenerPanel.OnJFrameActionsListener listener) {
         this.listener = listener;
-
         add(new LocationsCountInputPanel());
         //add(new LocationsCoordinatesInputPanel());
         add(new TimeRangeSelectionPanel());
         add(new TowerCarrierSelectionPanel());
+    }
+
+    @Override
+    public boolean hasValidInput() {
+        return false;
     }
 
     private class LocationsCountInputPanel extends JSetupListenerPanel {
@@ -41,7 +46,6 @@ public class GenerateSignalStrengthDataPanel extends JPanel {
                     count = locationsCount.getText();
                 }
             });
-
             add(text);
             add(locationsCount);
         }
@@ -97,6 +101,7 @@ public class GenerateSignalStrengthDataPanel extends JPanel {
                 }
             });
             timeRangeSlider.setValue(1);
+            timeRangeSlider.setMaximum(ReadingTimeRange.TIME_RANGES.length - 1);
             add(text);
             add(timeRangeSlider);
             add(status);
