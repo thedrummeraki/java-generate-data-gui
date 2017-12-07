@@ -20,6 +20,7 @@ public class GenerateSignalStrengthDataPanel extends JCustomPanel {
 
     public GenerateSignalStrengthDataPanel(JSetupListenerPanel.OnJFrameActionsListener listener) {
         this.listener = listener;
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(new LocationsCountInputPanel());
         //add(new LocationsCoordinatesInputPanel());
         add(new TimeRangeSelectionPanel());
@@ -151,37 +152,4 @@ public class GenerateSignalStrengthDataPanel extends JCustomPanel {
             return true;
         }
     }
-
-    private class ButtonsPanel extends JSetupListenerPanel {
-        @Override
-        protected void setupListeners() {
-            JButton exit = new JButton(), cancel = new JButton(), generate = new JButton();
-
-            setJButton(exit, "Exit", new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    GenerateSignalStrengthDataPanel.this.listener.onExit();
-                }
-            });
-            setJButton(cancel, "Cancel", new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    GenerateSignalStrengthDataPanel.this.listener.onCancel();
-                }
-            });
-            setJButton(generate, "Generate!", new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    GenerateSignalStrengthDataPanel.this.listener.onSubmit();
-                }
-            });
-            add(exit);
-            add(cancel);
-            add(generate);
-        }
-
-        @Override
-        public boolean hasValidInput() {
-            // No input, so always valid input
-            return true;
-        }
-    }
-
 }
