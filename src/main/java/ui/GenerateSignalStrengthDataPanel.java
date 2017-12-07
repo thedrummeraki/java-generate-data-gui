@@ -16,10 +16,7 @@ import java.util.List;
 
 public class GenerateSignalStrengthDataPanel extends JCustomPanel {
 
-    private JSetupListenerPanel.OnJFrameActionsListener listener;
-
-    public GenerateSignalStrengthDataPanel(JSetupListenerPanel.OnJFrameActionsListener listener) {
-        this.listener = listener;
+    public GenerateSignalStrengthDataPanel() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(new LocationsCountInputPanel());
         //add(new LocationsCoordinatesInputPanel());
@@ -86,7 +83,7 @@ public class GenerateSignalStrengthDataPanel extends JCustomPanel {
     }
 
     private class TimeRangeSelectionPanel extends JSetupListenerPanel {
-        private JSlider timeRangeSlider;
+        private JComboBox<ReadingTimeRange> timeRangeComboBox;
         private JLabel text, status;
         private ReadingTimeRange timeRange;
 
@@ -94,17 +91,21 @@ public class GenerateSignalStrengthDataPanel extends JCustomPanel {
         protected void setupListeners() {
             text = new JLabel("Time range: ");
             status = new JLabel();
-            timeRangeSlider = new JSlider();
-            timeRangeSlider.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    timeRange = ReadingTimeRange.TIME_RANGES[timeRangeSlider.getValue()];
-                    status.setText(timeRange.toString());
+
+            timeRangeComboBox = new JComboBox<>();
+            for (ReadingTimeRange timeRange : ReadingTimeRange.TIME_RANGES) {
+                timeRangeComboBox.addItem(timeRange);
+            }
+
+            timeRangeComboBox.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    timeRange = (ReadingTimeRange) e.getItem();
                 }
             });
-            timeRangeSlider.setValue(1);
-            timeRangeSlider.setMaximum(ReadingTimeRange.TIME_RANGES.length - 1);
+
             add(text);
-            add(timeRangeSlider);
+            add(timeRangeComboBox);
             add(status);
         }
 

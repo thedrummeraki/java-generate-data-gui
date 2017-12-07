@@ -21,7 +21,7 @@ public class MainLayoutPanel extends JSetupListenerPanel {
     @Override
     protected void setupListeners() {
         setLayout(new BorderLayout(10, 10));
-        centralPanel = new GenerateSignalStrengthDataPanel(actionsListener);
+        centralPanel = new GenerateSignalStrengthDataPanel();
 
         JLabel panelTitleLabel = new JLabel("Generate Signal Strength data");
         panelTitleLabel.setHorizontalTextPosition(SwingConstants.CENTER);
